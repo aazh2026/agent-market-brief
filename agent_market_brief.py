@@ -8,7 +8,7 @@ Produces JSON + a one-page Markdown brief:
 
 Sources are queried live so every number is dated and re-checkable.
 """
-import json, subprocess, datetime, collections, urllib.request, urllib.error
+import json, subprocess, datetime, collections, urllib.request, urllib.error, os
 
 UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 CK = "ck_b596329700fc2a3918b13fbaeabb656e3f1cc2ef2667b3dd"
@@ -65,8 +65,52 @@ if isinstance(cl, dict):
     cl = cl.get("data") or cl.get("listings") or []
 cl_real = [j for j in cl if "Welcome to Clawlancer" not in str(j.get("title"))]
 
+# ---------------------------------------------------------------- The Colony
+# The job brief names Colony explicitly. Its api_key is NOT a bearer token: it
+# must be exchanged for a JWT first, otherwise every route answers
+# AUTH_API_KEY_NOT_TOKEN. That was the reason Colony looked unreachable.
+col_claims = []
+col_note = "no colony api key on this machine"
+col_path = "/tmp/cw_bid/colony_api_key.txt"
+if os.path.exists(col_path):
+    col_key = open(col_path).read().strip()
+    tok = get_json("https://thecolony.ai/api/v1/auth/token", {
+        "Content-Type": "application/json", "User-Agent": UA,
+        "X-Api-Key": col_key, "api_key": col_key,
+    }) or {}
+    # Some builds want the key in the body, some in a header. Try both.
+    jwt = tok.get("access_token") or tok.get("token") or ""
+    if not jwt:
+        import urllib.request as _u
+        req = _u.Request("https://thecolony.ai/api/v1/auth/token",
+                         data=json.dumps({"api_key": col_key}).encode(),
+                         headers={"Content-Type": "application/json", "User-Agent": UA})
+        try:
+            tok = json.load(_u.urlopen(req, timeout=45))
+            jwt = tok.get("access_token") or ""
+        except Exception:
+            jwt = ""
+    if jwt:
+        jh = {"Authorization": f"Bearer {jwt}", "User-Agent": UA}
+        col_claims = (get_json("https://thecolony.ai/api/v1/claims", jh) or {}).get("data") or []
+        col_note = f"claims board returned {len(col_claims)} open paid claims"
+
+# ---------------------------------------------------------------- Subnano
+sub = get_json("https://subnano.ai/api/requests?limit=48&status=open",
+               {"User-Agent": UA, "Accept": "application/json"}) or {}
+sub_rows = sub.get("items") or []
+sub_stats = get_json("https://subnano.ai/api/requests/stats",
+                     {"User-Agent": UA, "Accept": "application/json"}) or {}
+
+# ---------------------------------------------------------------- near.ai
+# near.ai is NOT a job board: it is a private inference cloud. Verified from its
+# own llms.txt. Recording it here because the job brief listed it among boards.
+near_txt = get("https://near.ai/llms.txt") or ""
+near_is_board = "/api/jobs" in near_txt or "jobs list" in near_txt.lower()
+near_note = ("private TEE inference cloud (OpenAI-compatible API, per-token pricing) - "
+             "not a task marketplace; no hiring board and no task API")
+
 # ---------------------------------------------------------------- TaskMarket
-import os
 tm_rows = []
 tm_ok = False
 ks = os.path.expanduser("~/.taskmarket/keystore.json")
@@ -89,6 +133,9 @@ print(f"ClawWork jobs {len(cw_jobs)} (hiring {len(cw_hiring)}, mirrored {len(cw_
 print(f"dealwork jobs {len(dw_jobs)}")
 print(f"botstreet tasks {len(bs_tasks)}")
 print(f"clawlancer real bounties {len(cl_real)}")
+print(f"colony open paid claims {len(col_claims)} ({col_note})")
+print(f"subnano open requests {len(sub_rows)} (openBudgetUsd={sub_stats.get('openBudgetUsd')})")
+print(f"near.ai is a job board? {near_is_board}")
 print(f"taskmarket tasks {len(tm_rows)}" if tm_ok else "taskmarket: no keystore")
 
 
@@ -203,6 +250,57 @@ platforms.append({
     "settlement_history_observed": "buyer_reputation on the sampled listings shows released=1000 "
                                     "and payment_rate=100 on one established poster, and 0 on a new one",
     "source": "https://clawlancer.ai/api/listings?listing_type=BOUNTY&sort=newest",
+})
+
+# --- The Colony
+platforms.append({
+    "platform": "The Colony",
+    "buyer_type": "agents and humans on a forum-style board; paid claims board is the work surface",
+    "currency": "karma (reputation), not cash on the board itself",
+    "open_jobs": len(col_claims),
+    "budget_usd": stats([]),
+    "funded_at_post": None,
+    "competition": {"total_bids": None, "median_bids": None},
+    "payment_proof": "claims board is empty; account at karma 3, several publishing capabilities "
+                     "need 5-25 karma",
+    "settlement_history_observed": col_note,
+    "source": "https://thecolony.ai/api/v1/claims (api_key exchanged for a JWT first - the key is "
+              "not a bearer token)",
+})
+
+# --- Subnano
+sub_budgets = [float((r.get("budget") or {}).get("amount") or 0) for r in sub_rows]
+platforms.append({
+    "platform": "Subnano (Requests board)",
+    "buyer_type": "agents and humans posting briefs; priced in XNO or USDC",
+    "currency": "XNO (Nano) on the board; paid content uses x402 over Nano or Base USDC",
+    "open_jobs": len(sub_rows),
+    "budget_usd": stats([]),
+    "funded_at_post": None,
+    "competition": {"total_bids": sum(int(r.get("proposalCount") or 0) for r in sub_rows),
+                    "median_bids": None},
+    "payment_proof": "buyer buys the delivered Post; requester payment is recorded per proposal",
+    "settlement_history_observed": f"board-wide openBudgetUsd = {sub_stats.get('openBudgetUsd')}, "
+                                   f"openFromAgents = {sub_stats.get('openFromAgents')}, "
+                                   f"medianFirstResponseSeconds = {sub_stats.get('medianFirstResponseSeconds')}",
+    "source": "https://subnano.ai/api/requests?status=open and /api/requests/stats",
+    "note": {"budgets_are_xno_not_usd": sub_budgets,
+             "solved_requests": sub_stats.get("solved"),
+             "median_solve_seconds": sub_stats.get("medianSolveSeconds")},
+})
+
+# --- near.ai (named in the brief; it is not a job board)
+platforms.append({
+    "platform": "near.ai (NEAR AI Cloud)",
+    "buyer_type": "not a marketplace - an inference provider",
+    "currency": "USD per token",
+    "open_jobs": 0,
+    "budget_usd": stats([]),
+    "funded_at_post": None,
+    "competition": {"total_bids": None, "median_bids": None},
+    "payment_proof": "none - it sells inference, not work",
+    "settlement_history_observed": near_note,
+    "source": "https://near.ai/llms.txt",
 })
 
 # --- TaskMarket

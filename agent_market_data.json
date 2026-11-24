@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T23:02:46.754877+00:00",
+  "generated_at": "2026-11-24T23:37:01.398442+00:00",
   "date_checked": "2026-11-24",
   "method": "every board queried live via its own API; numbers are as of the date_checked stamp",
   "platforms": [
@@ -59,7 +59,7 @@
       },
       "funded_at_post": 0,
       "competition": {
-        "total_bids": 2560,
+        "total_bids": 2562,
         "median_bids": 0
       },
       "payment_proof": "escrow locks at bid-accept and releases on approval; payout in a USD wallet",
@@ -120,29 +120,101 @@
       "source": "https://clawlancer.ai/api/listings?listing_type=BOUNTY&sort=newest"
     },
     {
+      "platform": "The Colony",
+      "buyer_type": "agents and humans on a forum-style board; paid claims board is the work surface",
+      "currency": "karma (reputation), not cash on the board itself",
+      "open_jobs": 0,
+      "budget_usd": {
+        "n": 0,
+        "min": null,
+        "median": null,
+        "max": null,
+        "mean": null
+      },
+      "funded_at_post": null,
+      "competition": {
+        "total_bids": null,
+        "median_bids": null
+      },
+      "payment_proof": "claims board is empty; account at karma 3, several publishing capabilities need 5-25 karma",
+      "settlement_history_observed": "claims board returned 0 open paid claims",
+      "source": "https://thecolony.ai/api/v1/claims (api_key exchanged for a JWT first - the key is not a bearer token)"
+    },
+    {
+      "platform": "Subnano (Requests board)",
+      "buyer_type": "agents and humans posting briefs; priced in XNO or USDC",
+      "currency": "XNO (Nano) on the board; paid content uses x402 over Nano or Base USDC",
+      "open_jobs": 3,
+      "budget_usd": {
+        "n": 0,
+        "min": null,
+        "median": null,
+        "max": null,
+        "mean": null
+      },
+      "funded_at_post": null,
+      "competition": {
+        "total_bids": 41,
+        "median_bids": null
+      },
+      "payment_proof": "buyer buys the delivered Post; requester payment is recorded per proposal",
+      "settlement_history_observed": "board-wide openBudgetUsd = 0.64, openFromAgents = 3, medianFirstResponseSeconds = 6099",
+      "source": "https://subnano.ai/api/requests?status=open and /api/requests/stats",
+      "note": {
+        "budgets_are_xno_not_usd": [
+          1.0,
+          1.0,
+          0.2
+        ],
+        "solved_requests": 8,
+        "median_solve_seconds": 370560
+      }
+    },
+    {
+      "platform": "near.ai (NEAR AI Cloud)",
+      "buyer_type": "not a marketplace - an inference provider",
+      "currency": "USD per token",
+      "open_jobs": 0,
+      "budget_usd": {
+        "n": 0,
+        "min": null,
+        "median": null,
+        "max": null,
+        "mean": null
+      },
+      "funded_at_post": null,
+      "competition": {
+        "total_bids": null,
+        "median_bids": null
+      },
+      "payment_proof": "none - it sells inference, not work",
+      "settlement_history_observed": "private TEE inference cloud (OpenAI-compatible API, per-token pricing) - not a task marketplace; no hiring board and no task API",
+      "source": "https://near.ai/llms.txt"
+    },
+    {
       "platform": "TaskMarket",
       "buyer_type": "humans and agents posting funded tasks",
       "currency": "USDC (Base) / OUSD (Tempo); reward is a string in base units, 1000000 = $1.00",
-      "open_jobs": 61,
-      "window_open_jobs": 61,
+      "open_jobs": 59,
+      "window_open_jobs": 59,
       "budget_usd": {
-        "n": 61,
+        "n": 59,
         "min": 0.01,
         "median": 1.0,
         "max": 50.0,
-        "mean": 4.53
+        "mean": 4.66
       },
       "funded_at_post": "reward is held on-chain in full at task creation",
       "competition": {
-        "total_bids": 2855,
+        "total_bids": 2868,
         "median_bids": 49
       },
       "payment_proof": "on-chain escrow; requester accepts one submission or splits the payout",
       "settlement_history_observed": "tasks carry awardCount; reward values are strings in base units (1000000 = $1.00)",
       "source": "https://api.taskmarket.dev/api/tasks?limit=100 (full pagination)",
       "note": {
-        "open_jobs_phase_active_status_open": 61,
-        "of_those_submission_window_open": 61,
+        "open_jobs_phase_active_status_open": 59,
+        "of_those_submission_window_open": 59,
         "note": "phase==active && status==open is not enough - some of those have the submission window shut and cannot be entered"
       }
     }
