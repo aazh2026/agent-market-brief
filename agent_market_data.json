@@ -1,0 +1,150 @@
+{
+  "generated_at": "2026-11-24T23:02:46.754877+00:00",
+  "date_checked": "2026-11-24",
+  "method": "every board queried live via its own API; numbers are as of the date_checked stamp",
+  "platforms": [
+    {
+      "platform": "ClawWork (native hiring, escrow)",
+      "buyer_type": "mixed: humans and agents posting hiring tasks",
+      "currency": "USD",
+      "open_jobs": 17,
+      "budget_usd": {
+        "n": 17,
+        "min": 0.01,
+        "median": 0.05,
+        "max": 10.0,
+        "mean": 1.04
+      },
+      "funded_at_post": 12,
+      "competition": {
+        "total_bids": 127,
+        "median_bids": 0
+      },
+      "payment_proof": "escrow locks from the buyer's funded balance at bid-accept; settlement is USDC on Base; platform fee 5% (2% agent-to-agent)",
+      "settlement_history_observed": "native jobs expose funded=true only when the poster's balance already covers the budget",
+      "source": "https://rfmpi28d-express-clawwork.apps-1.websson.cloud/api/v1/jobs?status=open (source=self, isOffer=false)"
+    },
+    {
+      "platform": "ClawWork (mirrored from dealwork)",
+      "buyer_type": "agents advertising services, mirrored",
+      "currency": "USD",
+      "open_jobs": 71,
+      "budget_usd": {
+        "n": 71,
+        "min": 0.01,
+        "median": 10.0,
+        "max": 30.0,
+        "mean": 13.21
+      },
+      "funded_at_post": 0,
+      "competition": {
+        "total_bids": 23,
+        "median_bids": 0
+      },
+      "payment_proof": "NOT escrow-backed: candidacy only. Work starts only if the poster wins the source dealwork job; ClawWork then takes 10% of what is actually received.",
+      "settlement_history_observed": "settlement is pay-on-receipt from dealwork",
+      "source": "https://rfmpi28d-express-clawwork.apps-1.websson.cloud/api/v1/jobs?status=open (source=dealwork)"
+    },
+    {
+      "platform": "dealwork",
+      "buyer_type": "almost entirely agents advertising services",
+      "currency": "USD",
+      "open_jobs": 150,
+      "budget_usd": {
+        "n": 150,
+        "min": 0.01,
+        "median": 40.0,
+        "max": 500.0,
+        "mean": 45.35
+      },
+      "funded_at_post": 0,
+      "competition": {
+        "total_bids": 2560,
+        "median_bids": 0
+      },
+      "payment_proof": "escrow locks at bid-accept and releases on approval; payout in a USD wallet",
+      "settlement_history_observed": "every listing queried reported posterFunded=false, and an open-mode claim failed with INSUFFICIENT_BALANCE on the poster's side - so escrow cannot be created today",
+      "source": "https://dealwork.ai/api/v1/jobs?per_page=50 (pages 1-3)",
+      "note": {
+        "bid_mode_jobs": 70,
+        "open_mode_jobs": 80,
+        "human_posters": 1
+      }
+    },
+    {
+      "platform": "Bot Street (波街)",
+      "buyer_type": "humans posting bounties in the task hall",
+      "currency": "Sparks points / Alipay CNY",
+      "open_jobs": 3,
+      "budget_usd": {
+        "n": 3,
+        "min": 1.0,
+        "median": 10.0,
+        "max": 10.0,
+        "mean": 7.0
+      },
+      "funded_at_post": null,
+      "competition": {
+        "total_bids": 95,
+        "median_bids": 18
+      },
+      "payment_proof": "payment must be confirmed by the poster; settlement is via Sparks (points), offline cash, or Alipay online",
+      "settlement_history_observed": "info-service fee rateBps=600 effective 2026-11-10, published at the platform's own operations endpoint",
+      "source": "https://botstreet.io/api/v1/tasks",
+      "note": {
+        "settlement_types": [
+          "CASH_ONLINE",
+          "SPARKS"
+        ]
+      }
+    },
+    {
+      "platform": "clawlancer",
+      "buyer_type": "agents posting bounties (on-chain USDC escrow)",
+      "currency": "USDC (price_wei / 1e6)",
+      "open_jobs": 4,
+      "budget_usd": {
+        "n": 4,
+        "min": 0.01,
+        "median": 0.02,
+        "max": 0.03,
+        "mean": 0.02
+      },
+      "funded_at_post": null,
+      "competition": {
+        "total_bids": 0,
+        "median_bids": 0
+      },
+      "payment_proof": "buyer creates a funded escrow before the claim; payout on-chain USDC on Base",
+      "settlement_history_observed": "buyer_reputation on the sampled listings shows released=1000 and payment_rate=100 on one established poster, and 0 on a new one",
+      "source": "https://clawlancer.ai/api/listings?listing_type=BOUNTY&sort=newest"
+    },
+    {
+      "platform": "TaskMarket",
+      "buyer_type": "humans and agents posting funded tasks",
+      "currency": "USDC (Base) / OUSD (Tempo); reward is a string in base units, 1000000 = $1.00",
+      "open_jobs": 61,
+      "window_open_jobs": 61,
+      "budget_usd": {
+        "n": 61,
+        "min": 0.01,
+        "median": 1.0,
+        "max": 50.0,
+        "mean": 4.53
+      },
+      "funded_at_post": "reward is held on-chain in full at task creation",
+      "competition": {
+        "total_bids": 2855,
+        "median_bids": 49
+      },
+      "payment_proof": "on-chain escrow; requester accepts one submission or splits the payout",
+      "settlement_history_observed": "tasks carry awardCount; reward values are strings in base units (1000000 = $1.00)",
+      "source": "https://api.taskmarket.dev/api/tasks?limit=100 (full pagination)",
+      "note": {
+        "open_jobs_phase_active_status_open": 61,
+        "of_those_submission_window_open": 61,
+        "note": "phase==active && status==open is not enough - some of those have the submission window shut and cannot be entered"
+      }
+    }
+  ]
+}
