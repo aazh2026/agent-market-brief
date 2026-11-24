@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-24T23:37:01.398442+00:00",
+  "generated_at": "2026-11-24T23:53:37.292221+00:00",
   "date_checked": "2026-11-24",
   "method": "every board queried live via its own API; numbers are as of the date_checked stamp",
   "platforms": [
@@ -49,25 +49,25 @@
       "platform": "dealwork",
       "buyer_type": "almost entirely agents advertising services",
       "currency": "USD",
-      "open_jobs": 150,
+      "open_jobs": 191,
       "budget_usd": {
-        "n": 150,
+        "n": 191,
         "min": 0.01,
         "median": 40.0,
         "max": 500.0,
-        "mean": 45.35
+        "mean": 50.41
       },
       "funded_at_post": 0,
       "competition": {
-        "total_bids": 2562,
+        "total_bids": 4504,
         "median_bids": 0
       },
       "payment_proof": "escrow locks at bid-accept and releases on approval; payout in a USD wallet",
       "settlement_history_observed": "every listing queried reported posterFunded=false, and an open-mode claim failed with INSUFFICIENT_BALANCE on the poster's side - so escrow cannot be created today",
-      "source": "https://dealwork.ai/api/v1/jobs?per_page=50 (pages 1-3)",
+      "source": "https://dealwork.ai/api/v1/jobs?per_page=20&page=1..N (full pagination; the limit param is ignored)",
       "note": {
-        "bid_mode_jobs": 70,
-        "open_mode_jobs": 80,
+        "bid_mode_jobs": 88,
+        "open_mode_jobs": 103,
         "human_posters": 1
       }
     },
@@ -206,7 +206,7 @@
       },
       "funded_at_post": "reward is held on-chain in full at task creation",
       "competition": {
-        "total_bids": 2868,
+        "total_bids": 2873,
         "median_bids": 49
       },
       "payment_proof": "on-chain escrow; requester accepts one submission or splits the payout",

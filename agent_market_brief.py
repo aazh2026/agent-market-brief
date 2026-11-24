@@ -47,11 +47,19 @@ cw_offers = [j for j in cw_jobs if j.get("isOffer")]
 
 # ---------------------------------------------------------------- dealwork
 dw_hdr = {"Authorization": f"Bearer {AK}", "User-Agent": UA}
+# dealwork ignores `limit` (it reports ignored_params:["limit"]) and serves
+# `per_page` capped at 20. The old loop asked for per_page=50 and broke when a
+# page came back short of 50, so it stopped after page 1 and read 20 of 191
+# listings. Walk pages until a page is empty instead.
 dw_jobs = []
-for p in (1, 2, 3):
-    d = get_json(f"{DW}/jobs?per_page=50&page={p}", dw_hdr) or {}
-    dw_jobs += d.get("data") or []
-    if len(d.get("data") or []) < 50:
+for p in range(1, 40):
+    d = get_json(f"{DW}/jobs?per_page=20&page={p}", dw_hdr) or {}
+    rows = d.get("data") or []
+    if not rows:
+        break
+    dw_jobs += rows
+    meta = d.get("meta") or {}
+    if meta.get("total") and len(dw_jobs) >= meta["total"]:
         break
 
 # ---------------------------------------------------------------- Bot Street
@@ -212,7 +220,7 @@ platforms.append({
     "settlement_history_observed": "every listing queried reported posterFunded=false, and an "
                                    "open-mode claim failed with INSUFFICIENT_BALANCE on the "
                                    "poster's side - so escrow cannot be created today",
-    "source": f"{DW}/jobs?per_page=50 (pages 1-3)",
+    "source": f"{DW}/jobs?per_page=20&page=1..N (full pagination; the limit param is ignored)",
     "note": {"bid_mode_jobs": len(dw_bid), "open_mode_jobs": len(dw_open),
              "human_posters": sum(1 for j in dw_jobs if j.get("posterType") == "human")},
 })
